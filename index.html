@@ -645,6 +645,12 @@ function saveCart(){
 }
 let cart = loadCart();
 
+  // Tracks whether the current detail view was opened by jumping in from a
+// different section's cart (vs. clicking something in this section's own
+// grid) — so "Back to gallery" knows whether to just close the detail view
+// or actually navigate back to where you came from.
+let arrivedFromAnotherPage = false;
+
 /* ================================================================
    HELPERS
    ================================================================ */
@@ -942,8 +948,14 @@ document.getElementById("sizeAccHead").onclick = () => {
   sendResize();
 };
 
-document.getElementById("backBtn").onclick = closeDetail;
-
+document.getElementById("backBtn").onclick = () => {
+  if (arrivedFromAnotherPage){
+    window.history.back();
+  } else {
+    closeDetail();
+  }
+};
+  
 document.getElementById("requestBtn").onclick = () => {
   const d = state.currentDesign;
   addToCart({
@@ -1102,6 +1114,9 @@ function init(){
   renderAll();
   const hashId = window.location.hash.replace("#","");
   if (hashId && findDesign(hashId)){
+    const cameFromDifferentPage = document.referrer &&
+      document.referrer.split("#")[0] !== (window.location.origin + window.location.pathname);
+    arrivedFromAnotherPage = !!cameFromDifferentPage;
     openDetail(hashId);
   }
 }
